@@ -2,7 +2,7 @@
 
 > Why crack hashes when you can **blast** them?
 
-Inspired by [s0md3v/Hash-Buster](https://github.com/s0md3v/Hash-Buster) — rebuilt from scratch with a multi-module architecture, multi-API cascade, AI-powered analysis, and a full terminal UI.
+Live url - https://hashcrack-five.vercel.app/
 
 ---
 
