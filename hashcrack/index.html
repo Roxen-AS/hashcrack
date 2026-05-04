@@ -3,15 +3,324 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HashCrack v4.0</title>
-  <link rel="stylesheet" href="ui/styles.css">
+  <title>HashCrack v4.0-BOSS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+/* HashCrack v4.0 — Terminal Aesthetic Stylesheet */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --g:      #00ff88;
+  --g2:     #00cc66;
+  --g3:     #003322;
+  --gd:     #001a0e;
+  --gg:     #00ff8833;
+  --dim:    #00aa55;
+  --warn:   #ffaa00;
+  --err:    #ff4455;
+  --bg:     #020f08;
+  --panel:  #040d07;
+  --border: #00ff8844;
+}
+
+body {
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* ── Root ── */
+.hb-root {
+  font-family: 'Share Tech Mono', monospace;
+  background: var(--bg);
+  color: var(--g);
+  border: 1px solid var(--g2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* ── Scanlines overlay ── */
+.scanlines {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 10;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+  );
+}
+
+/* ── Header ── */
+.hb-header {
+  background: var(--gd);
+  border-bottom: 1px solid var(--g2);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hb-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px; font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--g);
+  text-shadow: 0 0 10px var(--g);
+}
+.hb-logo .accent { color: var(--warn); }
+.hb-logo .version { font-size: 11px; color: var(--dim); font-family: 'Share Tech Mono', monospace; }
+
+.hb-status-bar { font-size: 11px; color: var(--dim); display: flex; gap: 16px; align-items: center; }
+.status-warn { color: var(--warn); }
+.status-ok   { color: var(--g); }
+
+/* ── Tabs ── */
+.hb-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--gd);
+}
+
+.hb-tab {
+  padding: 8px 16px;
+  font-size: 12px; cursor: pointer;
+  color: var(--dim);
+  border: none; border-bottom: 2px solid transparent;
+  background: none;
+  letter-spacing: 1px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: color 0.15s, border-color 0.15s;
+}
+.hb-tab:hover { color: var(--g); }
+.hb-tab.active { color: var(--g); border-bottom-color: var(--g); text-shadow: 0 0 6px var(--g); }
+
+/* ── Body & Panels ── */
+.hb-body { padding: 16px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Input ── */
+.prompt-line { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.prompt-label { color: var(--warn); font-size: 13px; white-space: nowrap; padding-top: 3px; }
+
+.hb-input {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--g);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  padding: 8px 10px;
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  border-radius: 2px;
+}
+.hb-input:focus { border-color: var(--g2); box-shadow: 0 0 6px #00ff8830; }
+.hb-input::placeholder { color: #004422; }
+.hb-input-single { min-height: unset; height: 36px; resize: none; }
+
+/* ── Controls ── */
+.controls { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; align-items: center; }
+
+.btn {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--g2);
+  background: transparent;
+  color: var(--g);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.btn:hover   { background: var(--gg); box-shadow: 0 0 8px var(--gg); }
+.btn:active  { transform: scale(0.97); }
+.btn.primary { background: var(--g3); border-color: var(--g); }
+.btn.danger  { border-color: var(--err); color: var(--err); }
+.btn.danger:hover { background: #ff445520; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+.thread-control { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dim); }
+.thread-control input[type=range] { width: 80px; accent-color: var(--g); }
+
+/* ── Progress ── */
+.progress-bar {
+  height: 3px; background: var(--g3);
+  border-radius: 1px; overflow: hidden; margin: 8px 0;
+}
+.progress-fill {
+  height: 100%; background: var(--g);
+  box-shadow: 0 0 6px var(--g);
+  transition: width 0.3s;
+  width: 0%;
+}
+
+/* ── Stat Cards ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+.stat-card {
+  background: var(--gd); border: 1px solid var(--border);
+  border-radius: 2px; padding: 10px; text-align: center;
+}
+.stat-val {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--g); text-shadow: 0 0 8px var(--gg);
+}
+.stat-lbl { font-size: 10px; color: var(--dim); letter-spacing: 1px; margin-top: 2px; }
+.cracked-color { color: #00ff88 !important; }
+.err-color     { color: var(--err) !important; }
+
+/* ── Results Table ── */
+.results-header {
+  display: grid;
+  grid-template-columns: 30px 1fr 90px 110px 70px;
+  gap: 8px; padding: 6px 8px;
+  font-size: 10px; color: var(--dim);
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  margin-top: 16px;
+}
+.results-scroll { max-height: 260px; overflow-y: auto; }
+
+.result-row {
+  display: grid;
+  grid-template-columns: 30px 1fr 90px 110px 70px;
+  gap: 8px; padding: 8px;
+  font-size: 12px;
+  border-bottom: 1px solid #00ff8810;
+  align-items: center;
+  transition: background 0.1s;
+}
+.result-row:hover { background: #00ff8808; }
+.result-row.cracked { color: var(--g); }
+.result-row.pending { color: var(--dim); }
+.result-row.failed  { color: var(--err); }
+.result-row.loading { color: var(--warn); }
+
+.hash-cell {
+  font-size: 11px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer;
+}
+.hash-cell:hover { color: var(--g); text-decoration: underline; }
+
+.plaintext-cell { color: var(--g); font-weight: bold; }
+
+.copy-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; padding: 2px 6px;
+  border: 1px solid var(--border);
+  background: transparent; color: var(--dim);
+  cursor: pointer; border-radius: 1px;
+  transition: color 0.1s, border-color 0.1s;
+}
+.copy-btn:hover { color: var(--g); border-color: var(--g2); }
+
+/* ── Type Badges ── */
+.badge {
+  font-size: 10px; padding: 2px 6px;
+  border-radius: 2px; display: inline-block; letter-spacing: 0.5px;
+}
+.badge-md5     { background: #003355; color: #55aaff; border: 1px solid #224466; }
+.badge-sha1,
+.badge-sha-1   { background: #2a1500; color: var(--warn); border: 1px solid #553300; }
+.badge-sha256,
+.badge-sha-256 { background: #001a30; color: #4488ff; border: 1px solid #113366; }
+.badge-sha384,
+.badge-sha-384 { background: #100020; color: #cc88ff; border: 1px solid #442266; }
+.badge-sha512,
+.badge-sha-512 { background: #200010; color: #ff66aa; border: 1px solid #551133; }
+.badge-sha224,
+.badge-sha-224 { background: #001520; color: #33cccc; border: 1px solid #115544; }
+.badge-ntlm    { background: #0a1500; color: #88cc00; border: 1px solid #335500; }
+.badge-bcrypt  { background: #1a0020; color: #ff88ff; border: 1px solid #551166; }
+.badge-unknown { background: #1a1a00; color: #aaaa00; border: 1px solid #444400; }
+
+/* ── Log ── */
+.log-panel {
+  background: var(--gd); border: 1px solid var(--border);
+  border-radius: 2px; padding: 10px;
+  font-size: 11px; height: 120px;
+  overflow-y: auto; margin-top: 12px; line-height: 1.8;
+}
+.log-info { color: var(--g); }
+.log-warn { color: var(--warn); }
+.log-err  { color: var(--err); }
+.log-dim  { color: var(--dim); }
+
+/* ── Identify Panel ── */
+.identify-output {
+  background: var(--gd); border: 1px solid var(--border);
+  border-radius: 2px; padding: 12px;
+  font-size: 12px; margin-top: 8px; line-height: 2.2;
+}
+.identify-grid { display: grid; grid-template-columns: 130px 1fr; gap: 4px 16px; }
+
+/* ── Drop Zone ── */
+.drop-zone {
+  border: 1px dashed var(--border); padding: 24px;
+  text-align: center; color: var(--dim); font-size: 12px;
+  cursor: pointer; transition: all 0.2s;
+  border-radius: 2px; margin: 8px 0;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--g); color: var(--g); background: var(--gg);
+}
+.drop-icon { font-size: 24px; margin-bottom: 8px; }
+.drop-sub  { font-size: 11px; color: #004422; margin-top: 4px; }
+
+.file-preview { font-size: 12px; color: var(--dim); margin: 8px 0; }
+#file-input { display: none; }
+
+/* ── AI Panel ── */
+.ai-desc { margin-bottom: 10px; }
+.ai-output {
+  background: var(--gd); border: 1px solid var(--border);
+  border-left: 3px solid var(--g);
+  padding: 12px; font-size: 12px; line-height: 1.9;
+  border-radius: 2px; min-height: 80px;
+  white-space: pre-wrap; word-break: break-word;
+  margin-top: 10px;
+}
+
+/* ── About Panel ── */
+.about-grid { line-height: 2.2; font-size: 12px; }
+.about-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px; margin-bottom: 12px; letter-spacing: 2px;
+}
+.about-row { display: grid; grid-template-columns: 140px 1fr; gap: 8px; }
+.about-row .dim { color: var(--dim); }
+.api-item { color: var(--g2); }
+.about-warning { margin-top: 16px; color: var(--err); font-size: 11px; }
+
+/* ── Shared Utilities ── */
+.dim   { color: var(--dim); }
+.warn  { color: var(--warn); }
+.small { font-size: 11px; }
+.blink { animation: blink 1s step-start infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.spinner {
+  display: inline-block; width: 10px; height: 10px;
+  border: 2px solid var(--g3); border-top-color: var(--g);
+  border-radius: 50%; animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
   <div class="hb-root">
     <div class="scanlines"></div>
-
     <div class="hb-header">
       <div class="hb-logo">HASH<span class="accent">CRACK</span> <span class="version">v4.0-BOSS</span></div>
       <div class="hb-status-bar">
@@ -20,7 +329,6 @@
         <span id="api-status" class="status-warn">API: INIT</span>
       </div>
     </div>
-
     <div class="hb-tabs">
       <button class="hb-tab active" data-tab="crack">[ CRACK ]</button>
       <button class="hb-tab" data-tab="identify">[ IDENTIFY ]</button>
@@ -28,15 +336,12 @@
       <button class="hb-tab" data-tab="ai">[ AI ANALYSIS ]</button>
       <button class="hb-tab" data-tab="about">[ ABOUT ]</button>
     </div>
-
     <div class="hb-body">
 
-      <!-- CRACK PANEL -->
       <div class="panel active" id="panel-crack">
         <div class="prompt-line">
           <span class="prompt-label">root@hashcrack:~$</span>
-          <textarea class="hb-input" id="hash-input"
-            placeholder="paste hashes here — one per line, mixed types ok&#10;5f4dcc3b5aa765d61d8327deb882cf99&#10;da39a3ee5e6b4b0d3255bfef95601890afd80709"></textarea>
+          <textarea class="hb-input" id="hash-input" placeholder="paste hashes here — one per line, mixed types ok&#10;5f4dcc3b5aa765d61d8327deb882cf99&#10;da39a3ee5e6b4b0d3255bfef95601890afd80709"></textarea>
         </div>
         <div class="controls">
           <button class="btn primary" id="crack-btn">▶ RUN CRACK</button>
@@ -62,19 +367,16 @@
         <div class="log-panel" id="log-panel"></div>
       </div>
 
-      <!-- IDENTIFY PANEL -->
       <div class="panel" id="panel-identify">
         <div class="prompt-line" style="margin-bottom:8px">
           <span class="prompt-label">$</span>
-          <input type="text" class="hb-input hb-input-single" id="identify-input"
-            placeholder="enter hash to identify...">
+          <input type="text" class="hb-input hb-input-single" id="identify-input" placeholder="enter hash to identify...">
         </div>
         <div class="identify-output" id="identify-output">
           <span class="dim">Awaiting input — type or paste a hash above...</span>
         </div>
       </div>
 
-      <!-- FILE MODE PANEL -->
       <div class="panel" id="panel-file">
         <div class="drop-zone" id="drop-zone">
           <div class="drop-icon">⬇</div>
@@ -90,11 +392,8 @@
         <div id="file-results" class="results-scroll"></div>
       </div>
 
-      <!-- AI ANALYSIS PANEL -->
       <div class="panel" id="panel-ai">
-        <div class="ai-desc dim small">
-          SRE-mode AI analysis powered by Claude — analyzes uncracked hashes for patterns, entropy, and attack recommendations.
-        </div>
+        <div class="ai-desc dim small">SRE-mode AI analysis powered by Claude — analyzes uncracked hashes for patterns, entropy, and attack recommendations.</div>
         <div class="controls">
           <button class="btn primary" id="ai-btn">⚡ ANALYZE HASHES</button>
           <button class="btn" id="ai-clear-btn">✕ CLEAR</button>
@@ -104,20 +403,13 @@
         </div>
       </div>
 
-      <!-- ABOUT PANEL -->
       <div class="panel" id="panel-about">
         <div class="about-grid">
           <div class="about-title">SYSTEM INFO</div>
           <div class="about-row"><span class="dim">VERSION</span><span class="warn">4.0-BOSS (inspired by s0md3v/Hash-Buster)</span></div>
           <div class="about-row"><span class="dim">ENGINE</span><span>Multi-API parallel lookup with cascade fallback</span></div>
           <div class="about-row"><span class="dim">SUPPORTED</span><span>MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512, NTLM, BCRYPT</span></div>
-          <div class="about-row"><span class="dim">LOOKUP APIs</span>
-            <span>
-              <div class="api-item">→ md5decrypt.net</div>
-              <div class="api-item">→ hashtoolkit.com</div>
-              <div class="api-item">→ md5.gromweb.com</div>
-            </span>
-          </div>
+          <div class="about-row"><span class="dim">LOOKUP APIs</span><span><div class="api-item">→ nitrxgen.net</div><div class="api-item">→ md5decrypt.net</div><div class="api-item">→ md5.gromweb.com</div><div class="api-item">→ hashtoolkit.com</div></span></div>
           <div class="about-row"><span class="dim">AI BACKEND</span><span>claude-sonnet-4-20250514</span></div>
           <div class="about-row"><span class="dim">THREADING</span><span>Configurable 1–10 parallel requests</span></div>
           <div class="about-warning">⚠ FOR AUTHORIZED SECURITY RESEARCH ONLY. USE RESPONSIBLY.</div>
@@ -126,11 +418,759 @@
 
     </div>
   </div>
+  <script>
+/**
+ * core/detector.js
+ * Hash type identification and entropy analysis.
+ */
 
-  <script src="core/detector.js"></script>
-  <script src="api/lookup.js"></script>
-  <script src="core/engine.js"></script>
-  <script src="ui/renderer.js"></script>
-  <script src="ui/app.js"></script>
+const Detector = (() => {
+
+  const TYPES = [
+    { name: 'MD5',     len: 32,  regex: /^[0-9a-f]{32}$/i },
+    { name: 'SHA-1',   len: 40,  regex: /^[0-9a-f]{40}$/i },
+    { name: 'SHA-224', len: 56,  regex: /^[0-9a-f]{56}$/i },
+    { name: 'SHA-256', len: 64,  regex: /^[0-9a-f]{64}$/i },
+    { name: 'SHA-384', len: 96,  regex: /^[0-9a-f]{96}$/i },
+    { name: 'SHA-512', len: 128, regex: /^[0-9a-f]{128}$/i },
+    { name: 'NTLM',    len: 32,  regex: /^[0-9a-f]{32}$/i },  // same length as MD5 — ambiguous
+    { name: 'BCRYPT',  len: null, regex: /^\$2[aby]\$/ },
+    { name: 'MD5-CRYPT', len: null, regex: /^\$1\$/ },
+    { name: 'SHA512-CRYPT', len: null, regex: /^\$6\$/ },
+  ];
+
+  const TYPE_INFO = {
+    'MD5': {
+      algo: 'Message Digest 5',
+      bits: 128,
+      security: 'BROKEN — collision attacks exist. Do not use for security.',
+      crackability: 'Very fast — massive precomputed rainbow tables available.',
+      color: 'err'
+    },
+    'SHA-1': {
+      algo: 'Secure Hash Algorithm 1',
+      bits: 160,
+      security: 'DEPRECATED — SHA-1 collision demonstrated. Avoid.',
+      crackability: 'Lookup tables exist for common plaintexts.',
+      color: 'warn'
+    },
+    'SHA-224': {
+      algo: 'SHA-2 family (truncated)',
+      bits: 224,
+      security: 'ACCEPTABLE — truncation weakens slightly vs SHA-256.',
+      crackability: 'Rarely cracked — limited lookup coverage.',
+      color: 'ok'
+    },
+    'SHA-256': {
+      algo: 'SHA-2 family',
+      bits: 256,
+      security: 'STRONG — no practical attacks known.',
+      crackability: 'Difficult — only weak passwords in lookup databases.',
+      color: 'ok'
+    },
+    'SHA-384': {
+      algo: 'SHA-2 family (truncated SHA-512)',
+      bits: 384,
+      security: 'VERY STRONG — excellent security margin.',
+      crackability: 'Extremely difficult — minimal lookup coverage.',
+      color: 'ok'
+    },
+    'SHA-512': {
+      algo: 'SHA-2 family',
+      bits: 512,
+      security: 'VERY STRONG — gold standard for integrity.',
+      crackability: 'Practically infeasible without matched preimage.',
+      color: 'ok'
+    },
+    'BCRYPT': {
+      algo: 'Adaptive password hash (Blowfish)',
+      bits: null,
+      security: 'STRONG — designed for passwords, built-in cost factor.',
+      crackability: 'Slow by design. GPU attacks possible on weak passwords.',
+      color: 'ok'
+    },
+    'NTLM': {
+      algo: 'NT LAN Manager (Windows)',
+      bits: 128,
+      security: 'BROKEN — unsalted MD4, extremely weak.',
+      crackability: 'Instant with rainbow tables for common passwords.',
+      color: 'err'
+    },
+    'UNKNOWN': {
+      algo: 'Unrecognized',
+      bits: null,
+      security: 'Cannot assess — unrecognized format.',
+      crackability: 'Cannot assess.',
+      color: 'warn'
+    }
+  };
+
+  /** Identify hash type from string */
+  function identify(hash) {
+    const h = hash.trim();
+    for (const t of TYPES) {
+      if (t.regex.test(h)) {
+        // MD5 and NTLM share length 32 — default to MD5
+        return t.name === 'NTLM' ? 'MD5' : t.name;
+      }
+    }
+    return 'UNKNOWN';
+  }
+
+  /** Return detailed info object for a type */
+  function info(type) {
+    return TYPE_INFO[type] || TYPE_INFO['UNKNOWN'];
+  }
+
+  /** Shannon entropy of a string (bits per character) */
+  function entropy(s) {
+    const freq = {};
+    for (const c of s) freq[c] = (freq[c] || 0) + 1;
+    return Object.values(freq).reduce((e, f) => {
+      const p = f / s.length;
+      return e - p * Math.log2(p);
+    }, 0);
+  }
+
+  /** Extract all plausible hashes from arbitrary text */
+  function extractFromText(text) {
+    const regex = /\b[0-9a-fA-F]{32,128}\b/g;
+    const VALID_LENGTHS = new Set([32, 40, 56, 64, 96, 128]);
+    const matches = text.match(regex) || [];
+    return [...new Set(matches.filter(h => VALID_LENGTHS.has(h.length)))];
+  }
+
+  /** Parse input textarea — handles raw hashes, colon-separated, JSON blobs */
+  function parseInput(raw) {
+    return extractFromText(raw);
+  }
+
+  return { identify, info, entropy, extractFromText, parseInput };
+
+})();
+/**
+ * api/lookup.js
+ * Multi-API hash lookup — browser-safe endpoints with real CORS headers.
+ */
+
+const Lookup = (() => {
+
+  const TIMEOUT_MS = 8000;
+
+  const UNCRACKABLE = new Set(['BCRYPT', 'MD5-CRYPT', 'SHA512-CRYPT', 'UNKNOWN']);
+
+  async function fetchWithTimeout(url, ms, opts = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try {
+      const res = await fetch(url, { signal: controller.signal, ...opts });
+      return res;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // Endpoint 1: nitrxgen.net — public CORS-enabled MD5 rainbow table
+  async function tryNitrxgen(hash) {
+    try {
+      const res = await fetchWithTimeout(`https://www.nitrxgen.net/md5db/${hash}`, TIMEOUT_MS);
+      const text = (await res.text()).trim();
+      if (text && text.length > 0 && text.length < 100) return { result: text, source: 'nitrxgen.net' };
+    } catch (_) {}
+    return null;
+  }
+
+  // Endpoint 2: md5decrypt.net — free API with CORS
+  async function tryMd5decrypt(hash) {
+    try {
+      const res = await fetchWithTimeout(
+        `https://md5decrypt.net/Api/api.php?hash=${hash}&hash_type=md5&email=test@test.com&code=code1`,
+        TIMEOUT_MS
+      );
+      const text = (await res.text()).trim();
+      if (text && !text.toLowerCase().includes('error') && text !== hash && text.length < 100) {
+        return { result: text, source: 'md5decrypt.net' };
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  // Endpoint 3: md5.gromweb.com — JSON API
+  async function tryGromweb(hash) {
+    try {
+      const res = await fetchWithTimeout(`https://md5.gromweb.com/api/?md5=${hash}`, TIMEOUT_MS);
+      const data = await res.json();
+      if (data && data.string) return { result: data.string, source: 'md5.gromweb.com' };
+    } catch (_) {}
+    return null;
+  }
+
+  // Endpoint 4: hashtoolkit via corsproxy.io
+  async function tryHashtoolkit(hash) {
+    try {
+      const res = await fetchWithTimeout(
+        `https://corsproxy.io/?url=https://hashtoolkit.com/reverse-hash/?hash=${hash}`,
+        TIMEOUT_MS
+      );
+      const text = await res.text();
+      const m = text.match(/class="[^"]*hash-value[^"]*"[^>]*>([^<]{1,80})</);
+      if (m && m[1].trim()) return { result: m[1].trim(), source: 'hashtoolkit.com' };
+    } catch (_) {}
+    return null;
+  }
+
+  async function crack(hash) {
+    const type = Detector.identify(hash);
+
+    if (UNCRACKABLE.has(type)) {
+      return { hash, type, result: null, status: 'failed', source: null };
+    }
+
+    const attempts = type === 'MD5'
+      ? [tryNitrxgen(hash), tryMd5decrypt(hash), tryGromweb(hash), tryHashtoolkit(hash)]
+      : [tryHashtoolkit(hash)];
+
+    const hit = await Promise.any(
+      attempts.map(p => p.then(r => r ? Promise.resolve(r) : Promise.reject()).catch(() => Promise.reject()))
+    ).catch(() => null);
+
+    if (hit) return { hash, type, result: hit.result, status: 'cracked', source: hit.source };
+    return { hash, type, result: null, status: 'failed', source: null };
+  }
+
+  return { crack };
+
+})();
+/**
+ * core/engine.js
+ * Crack engine — manages job queue, concurrency, state, and events.
+ */
+
+const Engine = (() => {
+
+  /* ── State ── */
+  let state = {
+    hashes:    [],   // string[]
+    results:   {},   // hash → result object
+    running:   false,
+    threads:   5,
+  };
+
+  /* ── Event bus ── */
+  const listeners = {};
+
+  function on(event, fn) {
+    (listeners[event] = listeners[event] || []).push(fn);
+  }
+
+  function emit(event, data) {
+    (listeners[event] || []).forEach(fn => fn(data));
+  }
+
+  /* ── Helpers ── */
+  function getStats() {
+    const total   = state.hashes.length;
+    const cracked = Object.values(state.results).filter(r => r.status === 'cracked').length;
+    const failed  = Object.values(state.results).filter(r => r.status === 'failed').length;
+    const rate    = total > 0 ? Math.round((cracked / total) * 100) : 0;
+    return { total, cracked, failed, rate };
+  }
+
+  function getResult(hash) {
+    return state.results[hash] || null;
+  }
+
+  function getAllResults() {
+    return { ...state.results };
+  }
+
+  function getHashes() {
+    return [...state.hashes];
+  }
+
+  function isRunning() {
+    return state.running;
+  }
+
+  /* ── Core: chunk-based parallel runner ── */
+  async function run(rawInput, threads) {
+    if (state.running) return;
+
+    const hashes = Detector.parseInput(rawInput);
+    if (hashes.length === 0) {
+      emit('error', 'No valid hashes detected in input.');
+      return;
+    }
+
+    state.hashes  = hashes;
+    state.results = {};
+    state.running = true;
+    state.threads = threads || 5;
+
+    emit('start', { total: hashes.length });
+
+    // chunk into batches of `threads`
+    const chunks = [];
+    for (let i = 0; i < hashes.length; i += state.threads) {
+      chunks.push(hashes.slice(i, i + state.threads));
+    }
+
+    for (const chunk of chunks) {
+      const promises = chunk.map(async (hash) => {
+        // mark loading
+        state.results[hash] = {
+          hash, type: Detector.identify(hash), result: null, status: 'loading', source: null
+        };
+        emit('update', { hash, result: state.results[hash], stats: getStats() });
+
+        const res = await Lookup.crack(hash);
+        state.results[hash] = res;
+        emit('update', { hash, result: res, stats: getStats() });
+      });
+
+      await Promise.all(promises);
+    }
+
+    state.running = false;
+    emit('done', { stats: getStats() });
+  }
+
+  function reset() {
+    state.hashes  = [];
+    state.results = {};
+    state.running = false;
+    emit('reset', {});
+  }
+
+  /** Export results as TSV string */
+  function exportTSV() {
+    const lines = ['HASH\tTYPE\tPLAINTEXT\tSOURCE'];
+    for (const hash of state.hashes) {
+      const r = state.results[hash];
+      if (!r) continue;
+      lines.push([hash, r.type, r.result || 'NOT_FOUND', r.source || '—'].join('\t'));
+    }
+    return lines.join('\n');
+  }
+
+  return { on, run, reset, getStats, getResult, getAllResults, getHashes, isRunning, exportTSV };
+
+})();
+/**
+ * ui/renderer.js
+ * DOM rendering utilities — results table, badges, identify panel.
+ */
+
+const Renderer = (() => {
+
+  /* ── Badge HTML ── */
+  function badge(type) {
+    const cls = (type || 'unknown').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `<span class="badge badge-${cls}">${type}</span>`;
+  }
+
+  /* ── Single result row ── */
+  function resultRow(hash, result, index) {
+    const r   = result || { hash, type: Detector.identify(hash), status: 'pending', result: null };
+    const cls = r.status;
+
+    let plainHtml;
+    switch (r.status) {
+      case 'cracked': plainHtml = `<span class="plaintext-cell">${escHtml(r.result)}</span>`; break;
+      case 'loading': plainHtml = `<span class="spinner"></span>`; break;
+      case 'failed':  plainHtml = `<span class="err-color" style="font-size:10px">NOT FOUND</span>`; break;
+      default:        plainHtml = '—';
+    }
+
+    const actionHtml = r.status === 'cracked'
+      ? `<button class="copy-btn" data-copy="${escAttr(r.result)}">COPY</button>`
+      : `<button class="copy-btn" data-copy="${escAttr(hash)}">HASH</button>`;
+
+    return `
+      <div class="result-row ${cls}" data-hash="${escAttr(hash)}">
+        <span class="dim" style="font-size:10px">${index + 1}</span>
+        <span class="hash-cell" title="${escAttr(hash)}" data-copy="${escAttr(hash)}">${hash.substring(0, 28)}${hash.length > 28 ? '…' : ''}</span>
+        ${badge(r.type || Detector.identify(hash))}
+        <span>${plainHtml}</span>
+        <span>${actionHtml}</span>
+      </div>`;
+  }
+
+  /* ── Render full results list ── */
+  function renderResults(containerId, hashes) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = hashes.map((h, i) => resultRow(h, Engine.getResult(h), i)).join('');
+  }
+
+  /* ── Identify panel ── */
+  function renderIdentify(hash) {
+    const el = document.getElementById('identify-output');
+    if (!el) return;
+
+    if (!hash) {
+      el.innerHTML = '<span class="dim">Awaiting input — type or paste a hash above...</span>';
+      return;
+    }
+
+    const type = Detector.identify(hash);
+    const inf  = Detector.info(type);
+    const ent  = Detector.entropy(hash).toFixed(2);
+    const secColor = (type === 'MD5' || type === 'SHA-1' || type === 'NTLM')
+      ? 'var(--err)' : (type === 'UNKNOWN' ? 'var(--warn)' : 'var(--g)');
+
+    el.innerHTML = `
+      <div class="identify-grid">
+        <span class="dim">HASH</span>
+        <span style="word-break:break-all;font-size:11px">${escHtml(hash)}</span>
+        <span class="dim">TYPE</span>
+        ${badge(type)}
+        <span class="dim">LENGTH</span>
+        <span>${hash.length} chars / ${hash.length * 4} bits output</span>
+        <span class="dim">ALGORITHM</span>
+        <span>${inf.algo}</span>
+        <span class="dim">SECURITY</span>
+        <span style="color:${secColor}">${inf.security}</span>
+        <span class="dim">CRACKABILITY</span>
+        <span>${inf.crackability}</span>
+        <span class="dim">ENTROPY</span>
+        <span>${ent} bits/char</span>
+      </div>`;
+  }
+
+  /* ── Stats ── */
+  function updateStats(stats) {
+    setText('stat-total',   stats.total);
+    setText('stat-cracked', stats.cracked);
+    setText('stat-failed',  stats.failed);
+    setText('stat-rate',    stats.rate + '%');
+    const fill = document.getElementById('progress-fill');
+    if (fill && stats.total > 0) {
+      fill.style.width = ((stats.cracked + stats.failed) / stats.total * 100) + '%';
+    }
+  }
+
+  /* ── Log ── */
+  function log(msg, cls = 'log-info') {
+    const el = document.getElementById('log-panel');
+    if (!el) return;
+    const ts = new Date().toLocaleTimeString('en-GB');
+    el.innerHTML += `<div class="${cls}">[${ts}] ${msg}</div>`;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  /* ── Utilities ── */
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function escAttr(s) {
+    return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  return { renderResults, renderIdentify, updateStats, log, badge };
+
+})();
+/**
+ * ui/app.js
+ * Application controller — wires Engine, Renderer, Detector, Lookup together.
+ * Handles all UI events: tabs, crack, identify, file drop, AI analysis, export.
+ */
+
+(function () {
+
+  /* ═══════════════════════════════════════
+     TAB SWITCHING
+  ═══════════════════════════════════════ */
+  function initTabs() {
+    document.querySelectorAll('.hb-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.tab;
+        document.querySelectorAll('.hb-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + id).classList.add('active');
+      });
+    });
+  }
+
+  /* ═══════════════════════════════════════
+     CLOCK
+  ═══════════════════════════════════════ */
+  function initClock() {
+    const tick = () => {
+      const el = document.getElementById('sys-time');
+      if (el) el.textContent = new Date().toLocaleTimeString('en-GB');
+    };
+    tick();
+    setInterval(tick, 1000);
+
+    // mark API ready after short delay
+    setTimeout(() => {
+      const s = document.getElementById('api-status');
+      if (s) { s.textContent = 'API: READY'; s.className = 'status-ok'; }
+    }, 800);
+  }
+
+  /* ═══════════════════════════════════════
+     CRACK PANEL
+  ═══════════════════════════════════════ */
+  function initCrack() {
+    const crackBtn  = document.getElementById('crack-btn');
+    const clearBtn  = document.getElementById('clear-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const threadEl  = document.getElementById('thread-count');
+    const tcVal     = document.getElementById('tc-val');
+
+    // thread slider
+    threadEl.addEventListener('input', () => { tcVal.textContent = threadEl.value; });
+
+    // crack button
+    crackBtn.addEventListener('click', async () => {
+      if (Engine.isRunning()) return;
+      const raw = document.getElementById('hash-input').value.trim();
+      if (!raw) { Renderer.log('No input provided.', 'log-warn'); return; }
+      await Engine.run(raw, parseInt(threadEl.value));
+    });
+
+    // clear
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('hash-input').value = '';
+      document.getElementById('results-container').innerHTML = '';
+      document.getElementById('progress-fill').style.width = '0%';
+      Engine.reset();
+      Renderer.updateStats({ total: 0, cracked: 0, failed: 0, rate: 0 });
+      Renderer.log('Cleared all results.', 'log-dim');
+    });
+
+    // export
+    exportBtn.addEventListener('click', () => {
+      const tsv = Engine.exportTSV();
+      if (!tsv) { Renderer.log('No results to export.', 'log-warn'); return; }
+      const blob = new Blob([tsv], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'hashcrack_results.txt';
+      a.click();
+      Renderer.log('Results exported.', 'log-dim');
+    });
+
+    // delegate copy clicks in results
+    document.getElementById('results-container').addEventListener('click', e => {
+      const btn = e.target.closest('[data-copy]');
+      if (btn) copyToClipboard(btn.dataset.copy);
+    });
+
+    // wire Engine events
+    Engine.on('start', ({ total }) => {
+      crackBtn.disabled = true;
+      crackBtn.textContent = '⟳ RUNNING...';
+      Renderer.log(`Queued ${total} hash(es) for cracking.`);
+      Renderer.renderResults('results-container', Engine.getHashes());
+      Renderer.updateStats(Engine.getStats());
+    });
+
+    Engine.on('update', ({ hash, result, stats }) => {
+      Renderer.renderResults('results-container', Engine.getHashes());
+      Renderer.updateStats(stats);
+      if (result.status === 'cracked') {
+        Renderer.log(`✓ CRACKED [${result.type}] ${hash.substring(0,16)}… → "${result.result}"`, 'log-info');
+      } else if (result.status === 'failed') {
+        Renderer.log(`✗ NOT FOUND [${result.type}] ${hash.substring(0,16)}…`, 'log-warn');
+      }
+    });
+
+    Engine.on('done', ({ stats }) => {
+      crackBtn.disabled = false;
+      crackBtn.textContent = '▶ RUN CRACK';
+      Renderer.log(
+        `Done. ${stats.cracked}/${stats.total} cracked. Success rate: ${stats.rate}%`,
+        stats.cracked > 0 ? 'log-info' : 'log-warn'
+      );
+    });
+
+    Engine.on('error', (msg) => {
+      Renderer.log(msg, 'log-err');
+    });
+
+    Engine.on('reset', () => {});
+  }
+
+  /* ═══════════════════════════════════════
+     IDENTIFY PANEL
+  ═══════════════════════════════════════ */
+  function initIdentify() {
+    const input = document.getElementById('identify-input');
+    input.addEventListener('input', () => Renderer.renderIdentify(input.value.trim()));
+  }
+
+  /* ═══════════════════════════════════════
+     FILE PANEL
+  ═══════════════════════════════════════ */
+  let fileHashes = [];
+
+  function initFile() {
+    const zone        = document.getElementById('drop-zone');
+    const fileInput   = document.getElementById('file-input');
+    const crackBtn    = document.getElementById('file-crack-btn');
+
+    zone.addEventListener('click', () => fileInput.click());
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f) readFile(f);
+    });
+
+    fileInput.addEventListener('change', e => {
+      if (e.target.files[0]) readFile(e.target.files[0]);
+    });
+
+    crackBtn.addEventListener('click', async () => {
+      if (!fileHashes.length) return;
+      document.getElementById('hash-input').value = fileHashes.join('\n');
+      // switch to crack tab
+      document.querySelectorAll('.hb-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === 'crack');
+      });
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-crack').classList.add('active');
+      await Engine.run(fileHashes.join('\n'), parseInt(document.getElementById('thread-count').value));
+    });
+  }
+
+  function readFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      fileHashes = Detector.extractFromText(e.target.result);
+      renderFilePreview(file, fileHashes);
+      document.getElementById('file-crack-btn').disabled = fileHashes.length === 0;
+    };
+    reader.readAsText(file);
+  }
+
+  function renderFilePreview(file, hashes) {
+    document.getElementById('file-preview').innerHTML =
+      `<span style="color:var(--g)">✓ ${file.name}</span> — ${(file.size / 1024).toFixed(1)} KB — ` +
+      `<span class="warn">${hashes.length} hash(es) extracted</span>`;
+
+    const container = document.getElementById('file-results');
+    if (hashes.length === 0) {
+      container.innerHTML = '<div class="err-color small" style="padding:8px">No hashes found in file.</div>';
+      return;
+    }
+
+    let html = `<div class="small dim" style="padding:4px 0 6px">EXTRACTED HASHES (${hashes.length} total):</div>`;
+    hashes.slice(0, 30).forEach((h, i) => {
+      html += `
+        <div style="font-size:11px;padding:3px 0;border-bottom:1px solid #00ff8808;display:flex;gap:8px;align-items:center">
+          <span class="dim" style="font-size:10px;min-width:22px">${i + 1}</span>
+          ${Renderer.badge(Detector.identify(h))}
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${h}</span>
+        </div>`;
+    });
+    if (hashes.length > 30) html += `<div class="small dim" style="padding:4px">… and ${hashes.length - 30} more</div>`;
+    container.innerHTML = html;
+  }
+
+  /* ═══════════════════════════════════════
+     AI ANALYSIS PANEL
+  ═══════════════════════════════════════ */
+  function initAI() {
+    document.getElementById('ai-btn').addEventListener('click', runAIAnalysis);
+    document.getElementById('ai-clear-btn').addEventListener('click', () => {
+      document.getElementById('ai-output').innerHTML = '<span class="dim">Cleared.</span>';
+    });
+  }
+
+  async function runAIAnalysis() {
+    const btn = document.getElementById('ai-btn');
+    const out = document.getElementById('ai-output');
+    const all = Engine.getAllResults();
+    const allArr = Object.values(all);
+
+    if (allArr.length === 0) {
+      out.innerHTML = '<span class="warn">No hashes to analyze. Run the CRACK tab first.</span>';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⟳ ANALYZING...';
+    out.innerHTML = '<span class="spinner"></span> Consulting AI SRE engine...';
+
+    const cracked   = allArr.filter(r => r.status === 'cracked');
+    const uncracked = allArr.filter(r => r.status === 'failed');
+
+    const prompt = `You are a senior security engineer analyzing hash cracking results.
+
+CRACKED (${cracked.length}): ${cracked.slice(0, 10).map(r => `${r.type}:${r.result}`).join(', ')}
+UNCRACKED (${uncracked.length}): ${uncracked.slice(0, 15).map(r => `${r.type}:${r.hash.substring(0, 16)}...`).join(', ')}
+TOTAL HASHES: ${allArr.length}
+
+Provide a concise security analysis:
+1. Password strength assessment of cracked plaintexts (patterns, weaknesses)
+2. Hash algorithm security rating for each type found
+3. Attack recommendations for uncracked hashes (wordlist, rules, GPU time estimate)
+4. Overall security posture and remediation advice
+
+Be direct, technical, use bullet points. Under 300 words.`;
+
+    try {
+      const res  = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = (data.content || []).map(b => b.text || '').join('');
+      out.textContent = text || 'No response from AI.';
+    } catch (err) {
+      out.innerHTML = `<span class="err-color">API error: ${err.message}</span>`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = '⚡ ANALYZE HASHES';
+  }
+
+  /* ═══════════════════════════════════════
+     CLIPBOARD
+  ═══════════════════════════════════════ */
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      Renderer.log(`Copied: ${text.substring(0, 40)}`, 'log-dim');
+    });
+  }
+
+  /* ═══════════════════════════════════════
+     INIT
+  ═══════════════════════════════════════ */
+  function init() {
+    initClock();
+    initTabs();
+    initCrack();
+    initIdentify();
+    initFile();
+    initAI();
+
+    Renderer.log('HashCrack v4.0-BOSS initialized. Multi-API cascade ready.');
+    Renderer.log('Supported: MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512, NTLM', 'log-dim');
+    Renderer.updateStats({ total: 0, cracked: 0, failed: 0, rate: 0 });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+
+})();
+  </script>
 </body>
 </html>
