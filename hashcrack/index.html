@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HashCrack v4.0</title>
+  <link rel="stylesheet" href="ui/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="hb-root">
+    <div class="scanlines"></div>
+
+    <div class="hb-header">
+      <div class="hb-logo">HASH<span class="accent">CRACK</span> <span class="version">v4.0-BOSS</span></div>
+      <div class="hb-status-bar">
+        <span id="sys-time">--:--:--</span>
+        <span><span class="blink">■</span> ONLINE</span>
+        <span id="api-status" class="status-warn">API: INIT</span>
+      </div>
+    </div>
+
+    <div class="hb-tabs">
+      <button class="hb-tab active" data-tab="crack">[ CRACK ]</button>
+      <button class="hb-tab" data-tab="identify">[ IDENTIFY ]</button>
+      <button class="hb-tab" data-tab="file">[ FILE MODE ]</button>
+      <button class="hb-tab" data-tab="ai">[ AI ANALYSIS ]</button>
+      <button class="hb-tab" data-tab="about">[ ABOUT ]</button>
+    </div>
+
+    <div class="hb-body">
+
+      <!-- CRACK PANEL -->
+      <div class="panel active" id="panel-crack">
+        <div class="prompt-line">
+          <span class="prompt-label">root@hashcrack:~$</span>
+          <textarea class="hb-input" id="hash-input"
+            placeholder="paste hashes here — one per line, mixed types ok&#10;5f4dcc3b5aa765d61d8327deb882cf99&#10;da39a3ee5e6b4b0d3255bfef95601890afd80709"></textarea>
+        </div>
+        <div class="controls">
+          <button class="btn primary" id="crack-btn">▶ RUN CRACK</button>
+          <button class="btn" id="clear-btn">✕ CLEAR</button>
+          <button class="btn" id="export-btn">↓ EXPORT</button>
+          <div class="thread-control">
+            <span>THREADS:</span>
+            <input type="range" min="1" max="10" value="5" id="thread-count">
+            <span id="tc-val">5</span>
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-lbl">TOTAL</div></div>
+          <div class="stat-card"><div class="stat-val cracked-color" id="stat-cracked">0</div><div class="stat-lbl">CRACKED</div></div>
+          <div class="stat-card"><div class="stat-val err-color" id="stat-failed">0</div><div class="stat-lbl">FAILED</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-rate">0%</div><div class="stat-lbl">SUCCESS RATE</div></div>
+        </div>
+        <div class="results-header">
+          <span>#</span><span>HASH</span><span>TYPE</span><span>PLAINTEXT</span><span>ACTION</span>
+        </div>
+        <div id="results-container" class="results-scroll"></div>
+        <div class="log-panel" id="log-panel"></div>
+      </div>
+
+      <!-- IDENTIFY PANEL -->
+      <div class="panel" id="panel-identify">
+        <div class="prompt-line" style="margin-bottom:8px">
+          <span class="prompt-label">$</span>
+          <input type="text" class="hb-input hb-input-single" id="identify-input"
+            placeholder="enter hash to identify...">
+        </div>
+        <div class="identify-output" id="identify-output">
+          <span class="dim">Awaiting input — type or paste a hash above...</span>
+        </div>
+      </div>
+
+      <!-- FILE MODE PANEL -->
+      <div class="panel" id="panel-file">
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-icon">⬇</div>
+          <div>DROP FILE HERE or CLICK TO BROWSE</div>
+          <div class="drop-sub">Extracts hashes from any text-based file</div>
+        </div>
+        <input type="file" id="file-input" accept="*/*">
+        <div id="file-preview" class="file-preview"></div>
+        <div class="controls">
+          <button class="btn primary" id="file-crack-btn" disabled>▶ CRACK EXTRACTED</button>
+          <span id="file-extract-count" class="dim small"></span>
+        </div>
+        <div id="file-results" class="results-scroll"></div>
+      </div>
+
+      <!-- AI ANALYSIS PANEL -->
+      <div class="panel" id="panel-ai">
+        <div class="ai-desc dim small">
+          SRE-mode AI analysis powered by Claude — analyzes uncracked hashes for patterns, entropy, and attack recommendations.
+        </div>
+        <div class="controls">
+          <button class="btn primary" id="ai-btn">⚡ ANALYZE HASHES</button>
+          <button class="btn" id="ai-clear-btn">✕ CLEAR</button>
+        </div>
+        <div class="ai-output" id="ai-output">
+          <span class="dim">Run some hashes in the CRACK tab first, then use AI analysis to get pattern insights, attack vectors, and security assessment...</span>
+        </div>
+      </div>
+
+      <!-- ABOUT PANEL -->
+      <div class="panel" id="panel-about">
+        <div class="about-grid">
+          <div class="about-title">SYSTEM INFO</div>
+          <div class="about-row"><span class="dim">VERSION</span><span class="warn">4.0-BOSS (inspired by s0md3v/Hash-Buster)</span></div>
+          <div class="about-row"><span class="dim">ENGINE</span><span>Multi-API parallel lookup with cascade fallback</span></div>
+          <div class="about-row"><span class="dim">SUPPORTED</span><span>MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512, NTLM, BCRYPT</span></div>
+          <div class="about-row"><span class="dim">LOOKUP APIs</span>
+            <span>
+              <div class="api-item">→ md5decrypt.net</div>
+              <div class="api-item">→ hashtoolkit.com</div>
+              <div class="api-item">→ md5.gromweb.com</div>
+            </span>
+          </div>
+          <div class="about-row"><span class="dim">AI BACKEND</span><span>claude-sonnet-4-20250514</span></div>
+          <div class="about-row"><span class="dim">THREADING</span><span>Configurable 1–10 parallel requests</span></div>
+          <div class="about-warning">⚠ FOR AUTHORIZED SECURITY RESEARCH ONLY. USE RESPONSIBLY.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="core/detector.js"></script>
+  <script src="api/lookup.js"></script>
+  <script src="core/engine.js"></script>
+  <script src="ui/renderer.js"></script>
+  <script src="ui/app.js"></script>
+</body>
+</html>
