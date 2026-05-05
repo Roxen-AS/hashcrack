@@ -2,7 +2,7 @@
 
 > Why crack hashes when you can **blast** them?
 
-Live url - https://hashcrack-five.vercel.app/
+Live url - https://hashcrack-livid.vercel.app/
 
 ---
 
