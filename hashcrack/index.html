@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HashCrack v4.0-BOSS</title>
+  <title>HashCrack</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
@@ -344,9 +344,9 @@ body {
           <textarea class="hb-input" id="hash-input" placeholder="paste hashes here — one per line, mixed types ok&#10;5f4dcc3b5aa765d61d8327deb882cf99&#10;da39a3ee5e6b4b0d3255bfef95601890afd80709"></textarea>
         </div>
         <div class="controls">
-          <button class="btn primary" id="crack-btn">▶ RUN CRACK</button>
-          <button class="btn" id="clear-btn">✕ CLEAR</button>
-          <button class="btn" id="export-btn">↓ EXPORT</button>
+          <button class="btn primary" id="crack-btn">&#9654; RUN CRACK</button>
+          <button class="btn" id="clear-btn">&#10005; CLEAR</button>
+          <button class="btn" id="export-btn">&#8595; EXPORT</button>
           <div class="thread-control">
             <span>THREADS:</span>
             <input type="range" min="1" max="10" value="5" id="thread-count">
@@ -379,14 +379,14 @@ body {
 
       <div class="panel" id="panel-file">
         <div class="drop-zone" id="drop-zone">
-          <div class="drop-icon">⬇</div>
+          <div class="drop-icon">&#8595;</div>
           <div>DROP FILE HERE or CLICK TO BROWSE</div>
           <div class="drop-sub">Extracts hashes from any text-based file</div>
         </div>
         <input type="file" id="file-input" accept="*/*">
         <div id="file-preview" class="file-preview"></div>
         <div class="controls">
-          <button class="btn primary" id="file-crack-btn" disabled>▶ CRACK EXTRACTED</button>
+          <button class="btn primary" id="file-crack-btn" disabled>&#9654; CRACK EXTRACTED</button>
           <span id="file-extract-count" class="dim small"></span>
         </div>
         <div id="file-results" class="results-scroll"></div>
@@ -395,8 +395,8 @@ body {
       <div class="panel" id="panel-ai">
         <div class="ai-desc dim small">SRE-mode AI analysis powered by Claude — analyzes uncracked hashes for patterns, entropy, and attack recommendations.</div>
         <div class="controls">
-          <button class="btn primary" id="ai-btn">⚡ ANALYZE HASHES</button>
-          <button class="btn" id="ai-clear-btn">✕ CLEAR</button>
+          <button class="btn primary" id="ai-btn">&#9889; ANALYZE HASHES</button>
+          <button class="btn" id="ai-clear-btn">&#10005; CLEAR</button>
         </div>
         <div class="ai-output" id="ai-output">
           <span class="dim">Run some hashes in the CRACK tab first, then use AI analysis to get pattern insights, attack vectors, and security assessment...</span>
@@ -407,12 +407,17 @@ body {
         <div class="about-grid">
           <div class="about-title">SYSTEM INFO</div>
           <div class="about-row"><span class="dim">VERSION</span><span class="warn">4.0-BOSS (inspired by s0md3v/Hash-Buster)</span></div>
-          <div class="about-row"><span class="dim">ENGINE</span><span>Multi-API parallel lookup with cascade fallback</span></div>
+          <div class="about-row"><span class="dim">ENGINE</span><span>Vercel serverless proxy + multi-API cascade</span></div>
           <div class="about-row"><span class="dim">SUPPORTED</span><span>MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512, NTLM, BCRYPT</span></div>
-          <div class="about-row"><span class="dim">LOOKUP APIs</span><span><div class="api-item">→ nitrxgen.net</div><div class="api-item">→ md5decrypt.net</div><div class="api-item">→ md5.gromweb.com</div><div class="api-item">→ hashtoolkit.com</div></span></div>
+          <div class="about-row"><span class="dim">LOOKUP APIs</span><span>
+            <div class="api-item">&#8594; nitrxgen.net</div>
+            <div class="api-item">&#8594; md5decrypt.net</div>
+            <div class="api-item">&#8594; md5.gromweb.com</div>
+            <div class="api-item">&#8594; hashtoolkit.com</div>
+          </span></div>
           <div class="about-row"><span class="dim">AI BACKEND</span><span>claude-sonnet-4-20250514</span></div>
-          <div class="about-row"><span class="dim">THREADING</span><span>Configurable 1–10 parallel requests</span></div>
-          <div class="about-warning">⚠ FOR AUTHORIZED SECURITY RESEARCH ONLY. USE RESPONSIBLY.</div>
+          <div class="about-row"><span class="dim">THREADING</span><span>Configurable 1-10 parallel requests</span></div>
+          <div class="about-warning">&#9888; FOR AUTHORIZED SECURITY RESEARCH ONLY. USE RESPONSIBLY.</div>
         </div>
       </div>
 
@@ -550,74 +555,13 @@ const Detector = (() => {
 })();
 /**
  * api/lookup.js
- * Multi-API hash lookup — browser-safe endpoints with real CORS headers.
+ * Calls the Vercel serverless proxy at /api/crack which does the
+ * actual lookup server-side — no CORS issues.
  */
 
 const Lookup = (() => {
 
-  const TIMEOUT_MS = 8000;
-
   const UNCRACKABLE = new Set(['BCRYPT', 'MD5-CRYPT', 'SHA512-CRYPT', 'UNKNOWN']);
-
-  async function fetchWithTimeout(url, ms, opts = {}) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), ms);
-    try {
-      const res = await fetch(url, { signal: controller.signal, ...opts });
-      return res;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  // Endpoint 1: nitrxgen.net — public CORS-enabled MD5 rainbow table
-  async function tryNitrxgen(hash) {
-    try {
-      const res = await fetchWithTimeout(`https://www.nitrxgen.net/md5db/${hash}`, TIMEOUT_MS);
-      const text = (await res.text()).trim();
-      if (text && text.length > 0 && text.length < 100) return { result: text, source: 'nitrxgen.net' };
-    } catch (_) {}
-    return null;
-  }
-
-  // Endpoint 2: md5decrypt.net — free API with CORS
-  async function tryMd5decrypt(hash) {
-    try {
-      const res = await fetchWithTimeout(
-        `https://md5decrypt.net/Api/api.php?hash=${hash}&hash_type=md5&email=test@test.com&code=code1`,
-        TIMEOUT_MS
-      );
-      const text = (await res.text()).trim();
-      if (text && !text.toLowerCase().includes('error') && text !== hash && text.length < 100) {
-        return { result: text, source: 'md5decrypt.net' };
-      }
-    } catch (_) {}
-    return null;
-  }
-
-  // Endpoint 3: md5.gromweb.com — JSON API
-  async function tryGromweb(hash) {
-    try {
-      const res = await fetchWithTimeout(`https://md5.gromweb.com/api/?md5=${hash}`, TIMEOUT_MS);
-      const data = await res.json();
-      if (data && data.string) return { result: data.string, source: 'md5.gromweb.com' };
-    } catch (_) {}
-    return null;
-  }
-
-  // Endpoint 4: hashtoolkit via corsproxy.io
-  async function tryHashtoolkit(hash) {
-    try {
-      const res = await fetchWithTimeout(
-        `https://corsproxy.io/?url=https://hashtoolkit.com/reverse-hash/?hash=${hash}`,
-        TIMEOUT_MS
-      );
-      const text = await res.text();
-      const m = text.match(/class="[^"]*hash-value[^"]*"[^>]*>([^<]{1,80})</);
-      if (m && m[1].trim()) return { result: m[1].trim(), source: 'hashtoolkit.com' };
-    } catch (_) {}
-    return null;
-  }
 
   async function crack(hash) {
     const type = Detector.identify(hash);
@@ -626,16 +570,26 @@ const Lookup = (() => {
       return { hash, type, result: null, status: 'failed', source: null };
     }
 
-    const attempts = type === 'MD5'
-      ? [tryNitrxgen(hash), tryMd5decrypt(hash), tryGromweb(hash), tryHashtoolkit(hash)]
-      : [tryHashtoolkit(hash)];
+    try {
+      const res = await fetch(`/api/crack?hash=${encodeURIComponent(hash)}&type=${encodeURIComponent(type)}`, {
+        signal: AbortSignal.timeout(15000)
+      });
 
-    const hit = await Promise.any(
-      attempts.map(p => p.then(r => r ? Promise.resolve(r) : Promise.reject()).catch(() => Promise.reject()))
-    ).catch(() => null);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    if (hit) return { hash, type, result: hit.result, status: 'cracked', source: hit.source };
-    return { hash, type, result: null, status: 'failed', source: null };
+      const data = await res.json();
+
+      return {
+        hash,
+        type,
+        result: data.result || null,
+        status: data.status || 'failed',
+        source: data.source || null
+      };
+    } catch (err) {
+      console.warn('Lookup proxy error:', err.message);
+      return { hash, type, result: null, status: 'failed', source: null };
+    }
   }
 
   return { crack };
